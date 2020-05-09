@@ -17,16 +17,16 @@ from decimal import Decimal
 from pathlib import Path
 import random
 import csv
-
+import shutil
 
 SQUARE_SIZE = (35, 35)
 
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, settings, show=True, fps=2000):
+    def __init__(self, settings, show=False, fps=2000):
         super().__init__()
-        self.printIndividualSnakeFitness = False
+        self.printIndividualSnakeFitness = True
         self.setAutoFillBackground(True)
         palette = self.palette()
         palette.setColor(self.backgroundRole(), QtGui.QColor(240, 240, 240))
@@ -85,6 +85,12 @@ class MainWindow(QtWidgets.QMainWindow):
                               apple_and_self_vision=self.settings['apple_and_self_vision'])
             individuals.append(individual)
 
+        #clear out any saved snakes
+        try:
+            shutil.rmtree('./snakes/')
+        except OSError as e:
+            print("Error: %s : %s" % ('./snakes/', e.strerror))
+
         self.best_fitness = 0
         self.best_score = 0
 
@@ -140,7 +146,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # Calculate fitness of current individual
             self.snake.calculate_fitness()
             fitness = self.snake.fitness
-            if self.printIndividualSnakeFitness:
+            if self.printIndividualSnakeFitness and fitness > 1000000:
                 print(self._current_individual, fitness) #outputs the individual snakes fitness
 
             # fieldnames = ['frames', 'score', 'fitness']
@@ -172,10 +178,10 @@ class MainWindow(QtWidgets.QMainWindow):
             if (self.current_generation > 0 and self._current_individual == self._next_gen_size) or\
                 (self.current_generation == 0 and self._current_individual == settings['num_parents']):
                 print(self.settings)
-                print('======================= Gneration {} ======================='.format(self.current_generation))
-                print('----Max fitness:', self.population.fittest_individual.fitness)
-                print('----Best Score:', self.population.fittest_individual.score)
-                print('----Average fitness:', self.population.average_fitness)
+                print(f'======================= Generation {self.current_generation} =======================')
+                print(f'----Max fitness:{self.population.fittest_individual.fitness}')
+                print(f'----Best Score:{self.population.fittest_individual.score}')
+                print(f'----Average fitness:{self.population.average_fitness}')
                 self.next_generation()
                 save_snake('./snakes/',f'{self.current_generation}', self.snake, self.settings)
             else:
