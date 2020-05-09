@@ -24,7 +24,7 @@ SQUARE_SIZE = (35, 35)
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, settings, show=False, fps=1000):
+    def __init__(self, settings, show=True, fps=2000):
         super().__init__()
         self.printIndividualSnakeFitness = False
         self.setAutoFillBackground(True)
@@ -98,7 +98,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.update)
-        
+
         self.timer.start(1000//fps)
 
         if show:
