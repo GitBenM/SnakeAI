@@ -24,8 +24,9 @@ SQUARE_SIZE = (35, 35)
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, settings, show=False, fps=2000):
+    def __init__(self, settings, show=False, fps=1000):
         super().__init__()
+        self.printIndividualSnakeFitness = False
         self.setAutoFillBackground(True)
         palette = self.palette()
         palette.setColor(self.backgroundRole(), QtGui.QColor(240, 240, 240))
@@ -97,7 +98,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.update)
-        self.timer.start(1000./fps)
+        
+        self.timer.start(1000//fps)
 
         if show:
             self.show()
@@ -138,7 +140,8 @@ class MainWindow(QtWidgets.QMainWindow):
             # Calculate fitness of current individual
             self.snake.calculate_fitness()
             fitness = self.snake.fitness
-            #print(self._current_individual, fitness) #outputs the individual snakes fitness
+            if self.printIndividualSnakeFitness:
+                print(self._current_individual, fitness) #outputs the individual snakes fitness
 
             # fieldnames = ['frames', 'score', 'fitness']
             # f = os.path.join(os.getcwd(), 'test_del3_1_0_stats.csv')
