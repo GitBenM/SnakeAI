@@ -68,20 +68,21 @@ class MainWindow(QtWidgets.QMainWindow):
         
         individuals: List[Individual] = []
 
-        for _ in range(self.settings['num_parents'] - 10):
+        #load the best snakes, if there are any
+        self.pathToBestSnakes = 'best_snakes/'
+
+        for f in os.scandir(self.pathToBestSnakes):
+            if f.is_dir():
+                individuals.append(load_snake(self.pathToBestSnakes,f.name))
+
+        #load up new snakes, minus the best snakes
+        for _ in range(self.settings['num_parents'] - len(individuals)):
             individual = Snake(self.board_size, hidden_layer_architecture=self.settings['hidden_network_architecture'],
                               hidden_activation=self.settings['hidden_layer_activation'],
                               output_activation=self.settings['output_layer_activation'],
                               lifespan=self.settings['lifespan'],
                               apple_and_self_vision=self.settings['apple_and_self_vision'])
             individuals.append(individual)
-
-        #load the best snakes, if there are any
-        self.pathToBestSnakes = 'best_snakes/'
-
-        for f in os.scandir(self.pathToBestSnakes):
-            if f.is_dir():
-                individuals.append(load_snake(self.pathToBestSnakes,s))
 
         self.best_fitness = 0
         self.best_score = 0
