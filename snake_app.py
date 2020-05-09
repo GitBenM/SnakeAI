@@ -14,6 +14,7 @@ from genetic_algorithm.crossover import simulated_binary_crossover as SBX
 from genetic_algorithm.crossover import uniform_binary_crossover, single_point_binary_crossover
 from math import sqrt
 from decimal import Decimal
+from pathlib import Path
 import random
 import csv
 
@@ -23,7 +24,7 @@ SQUARE_SIZE = (35, 35)
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, settings, show=True, fps=200):
+    def __init__(self, settings, show=False, fps=2000):
         super().__init__()
         self.setAutoFillBackground(True)
         palette = self.palette()
@@ -51,7 +52,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         
         self.board_size = settings['board_size']
-        self.border = (0, 10, 0, 10)  # Left, Top, Right, Bottom
+        #self.border = (0, 10, 0, 10)  # Left, Top, Right, Bottom
+        self.border = (0, self.board_size[0], 0, self.board_size[1]) # Left, Top, Right, Bottom
         self.snake_widget_width = SQUARE_SIZE[0] * self.board_size[0]
         self.snake_widget_height = SQUARE_SIZE[1] * self.board_size[1]
 
@@ -66,13 +68,20 @@ class MainWindow(QtWidgets.QMainWindow):
         
         individuals: List[Individual] = []
 
-        for _ in range(self.settings['num_parents']):
+        for _ in range(self.settings['num_parents'] - 10):
             individual = Snake(self.board_size, hidden_layer_architecture=self.settings['hidden_network_architecture'],
                               hidden_activation=self.settings['hidden_layer_activation'],
                               output_activation=self.settings['output_layer_activation'],
                               lifespan=self.settings['lifespan'],
                               apple_and_self_vision=self.settings['apple_and_self_vision'])
             individuals.append(individual)
+
+        #load the best snakes, if there are any
+        self.pathToBestSnakes = 'best_snakes/'
+
+        for f in os.scandir(self.pathToBestSnakes):
+            if f.is_dir():
+                individuals.append(load_snake(self.pathToBestSnakes,s))
 
         self.best_fitness = 0
         self.best_score = 0
@@ -128,7 +137,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # Calculate fitness of current individual
             self.snake.calculate_fitness()
             fitness = self.snake.fitness
-            print(self._current_individual, fitness)
+            #print(self._current_individual, fitness) #outputs the individual snakes fitness
 
             # fieldnames = ['frames', 'score', 'fitness']
             # f = os.path.join(os.getcwd(), 'test_del3_1_0_stats.csv')
@@ -164,6 +173,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 print('----Best Score:', self.population.fittest_individual.score)
                 print('----Average fitness:', self.population.average_fitness)
                 self.next_generation()
+                save_snake('./snakes/',f'{self.current_generation}', self.snake, self.settings)
             else:
                 current_pop = self.settings['num_parents'] if self.current_generation == 0 else self._next_gen_size
                 self.ga_window.current_individual_label.setText('{}/{}'.format(self._current_individual + 1, current_pop))
@@ -481,7 +491,7 @@ class SnakeWidget(QtWidgets.QWidget):
             self.snake = snake
         self.setFocus()
 
-        self.draw_vision = True
+        self.draw_vision = False
         self.show()
 
     def new_game(self) -> None:
